@@ -1,0 +1,18 @@
+version: "3.8"
+services:
+  birdnest_app:
+    image: 'node:lts-bullseye'
+    container_name: 'birdnest_app'
+    volumes:
+      - "./app:/app"
+    working_dir: "/app"
+    entrypoint: "/bin/bash -c"
+    command:
+      - "npm run dev"
+    ports:
+      - 3000:3000
+
+# Build with:
+#   make install
+# Launch with:
+#   make up
