@@ -1,6 +1,9 @@
-import { DroneList } from '../components/DroneList';
+import { DroneList, IDrone } from '../components/DroneList';
+import { fetchServerDroneList } from '../utils/queries';
 
-export default function Page() {
+const Page = async () => {
+	const list: IDrone[] = await fetchServerDroneList();
+	console.log(list);
 	return (
 		<div>
 			<h1>Birdnest</h1>
@@ -9,4 +12,6 @@ export default function Page() {
 			<DroneList />
 		</div>
 	);
-}
+};
+
+export default Page;
