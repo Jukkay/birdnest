@@ -1,10 +1,12 @@
 'use client'
 
 import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { fetchClientDroneList } from "../utils/queries";
 
 export const DroneList = ({list}: {list: IDrone[]}) => {
 	console.log("List in DroneList", list)
+	const [violators, setViolators] = useState<IDrone[]>([]) 
 	const { isLoading, isError, data, error } = useQuery<IDrone[], Error>({
 		queryKey: ['drones'],
 		queryFn: fetchClientDroneList,
@@ -12,6 +14,20 @@ export const DroneList = ({list}: {list: IDrone[]}) => {
 		refetchInterval: 2000,
 		refetchOnMount: false,
 	  })
+	// Calculate violating drones
+	useEffect(() => {
+		if (!data || data.length < 1) return
+		const mappedViolators: IDrone[] = []
+		data.map(drone => {
+			const x = Math.abs(drone.positionX - 250000)
+			const y = Math.abs(drone.positionY - 250000)
+			const distance = Math.sqrt((x * x) + (y * y))
+			const rad = 100000
+			if (distance <= rad)
+				mappedViolators.push(drone)
+			})
+		setViolators(mappedViolators)
+	}, [data])
 	if (isError) {
 		return <div>Error: {error.message}</div>
 	}
@@ -20,10 +36,17 @@ export const DroneList = ({list}: {list: IDrone[]}) => {
 	}
 	return data && data.length > 0 ? (
 		<div>
+			<h3>All drones</h3>
 			{data.map((item: IDrone) => (
 				<div key={item.serialNumber}>{item.serialNumber}</div>
 			)
 			)}
+			<h3>Violating drones</h3>
+			{violators.map((item: IDrone) => (
+				<div key={item.serialNumber}>{item.serialNumber}</div>
+			)
+			)}
+			<canvas width="500" height="500">Violating drones are visualized here.</canvas>
 		</div>
 	) : (
 		<div>No drones found</div>
