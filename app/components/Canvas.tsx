@@ -3,33 +3,33 @@
 import { useEffect, useRef } from 'react';
 import { IDrone } from './DroneList';
 
-const drawCoordinate = (
+const drawDrone = (
 	context: CanvasRenderingContext2D,
-	x: number,
-	y: number
+	drone: IDrone
 ) => {
-    x = Math.floor(x / 1000)
-    y = Math.floor(y / 1000)
-	context.fillStyle = 'red';
+    const x = Math.floor(drone.positionX / 1000)
+    const y = Math.floor(drone.positionY / 1000)
+	if (drone.violator)
+		context.fillStyle = 'red';
+	else
+		context.fillStyle = 'green'
 	context.fillRect(x, y, 5, 5);
     context.font = '20px serif'
     context.textAlign = "center"; 
     context.textBaseline = "middle"; 
-    // draw the emoji
-    context.fillText('👽', x, y)
 };
 
 const drawBase = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.strokeStyle = 'black'
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height)
+    // ctx.strokeStyle = 'black'
+    // ctx.lineWidth = 1;
+    // ctx.strokeRect(0, 0, canvas.width, canvas.height)
     ctx.beginPath();
     ctx.arc(250, 250, 100, 0, 2 * Math.PI);
     ctx.stroke();
 }
 
-export const Canvas = ({ violators }: { violators: IDrone[] }) => {
+export const Canvas = ({ drones }: { drones: IDrone[] }) => {
 	const ref = useRef<HTMLCanvasElement>(null);
 
 	// Draw coordinates on canvas
@@ -39,10 +39,10 @@ export const Canvas = ({ violators }: { violators: IDrone[] }) => {
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
         drawBase(ctx, canvas);
-		violators.length > 0 && violators.map((violator: IDrone) => {
-			drawCoordinate(ctx, violator.positionX, violator.positionY);
+		drones.length > 0 && drones.map((drone: IDrone) => {
+			drawDrone(ctx, drone);
 		});
-	}, [violators]);
+	}, [drones]);
 	return (
 		<canvas width="500" height="500" ref={ref} className="">
 			Violating drones are visualized here.
