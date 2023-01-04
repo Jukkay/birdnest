@@ -14,8 +14,8 @@ model Drone {
   id              Int     @id @default(autoincrement())
   serialNumber    String  @unique
   violationTime   DateTime
-  distance        Int
-  name            String?
-  email           String?
-  phoneNumber     String?
+  distance        Float
+  name            String
+  email           String
+  phoneNumber     String
 }

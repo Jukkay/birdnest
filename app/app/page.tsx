@@ -1,14 +1,15 @@
-import { DroneList, IDrone } from '../components/DroneList';
-import { fetchServerDroneList } from '../utils/queries';
+import { Drone, PrismaClient } from '@prisma/client';
+import { DroneList, IDrone, IReturnType } from '../components/DroneList';
+import { IRawData, ISavedDrone } from '../pages/api/drones';
 
 const Page = async () => {
-	const list: IDrone[] = await fetchServerDroneList();
-	console.log(list);
+	const prisma = new PrismaClient();
+	const freshData: Drone[] = await prisma.drone.findMany();
 	return (
 		<div>
 			<h1>Birdnest</h1>
 			{/* Server components are not yet fully supported by TypeScript, so this work around is needed */}
-			<DroneList list={list} />
+			<DroneList list={freshData} />
 		</div>
 	);
 };

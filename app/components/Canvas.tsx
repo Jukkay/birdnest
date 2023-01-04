@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { IRawData } from '../pages/api/drones';
 import { IDrone } from './DroneList';
 
 const drawDrone = (
@@ -29,7 +30,7 @@ const drawBase = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
     ctx.stroke();
 }
 
-export const Canvas = ({ drones }: { drones: IDrone[] }) => {
+export const Canvas = ({ drones }: { drones: IRawData[] }) => {
 	const ref = useRef<HTMLCanvasElement>(null);
 
 	// Draw coordinates on canvas
@@ -39,7 +40,7 @@ export const Canvas = ({ drones }: { drones: IDrone[] }) => {
 		const ctx = canvas.getContext('2d');
 		if (!ctx) return;
         drawBase(ctx, canvas);
-		drones.length > 0 && drones.map((drone: IDrone) => {
+		drones.length > 0 && drones.map((drone: IRawData) => {
 			drawDrone(ctx, drone);
 		});
 	}, [drones]);
