@@ -1,18 +1,15 @@
 'use client';
 
-import { Drone } from '@prisma/client';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
 import { IRawData, ISavedDrone } from '../pages/api/drones';
-import { fetchClientDroneList, fetchInfo } from '../utils/queries';
+import { fetchClientDroneList } from '../utils/queries';
 import { Canvas } from './Canvas';
 
-export const DroneList = ({ list }: { list: Drone[] }) => {
+export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 	const { isLoading, isError, data, error } = useQuery({
 		queryKey: ['drones'],
 		queryFn: fetchClientDroneList,
-		initialData: { violators: list, all: [] } as IReturnType,
-		refetchInterval: 2000,
+		refetchInterval: refetchInterval,
 	});
 	if (isError) {
 		return <div>Error: {(error as Error).message}</div>;
@@ -30,7 +27,7 @@ export const DroneList = ({ list }: { list: Drone[] }) => {
 					<div>{item.name}</div>
 					<div>{item.email}</div>
 					<div>{item.phoneNumber}</div>
-					<div>{`${(item.distance / 1000).toFixed(1)} m`}</div>
+					<div>{`Closest distance to the nest: ${(item.distance / 1000).toFixed(1)} meters`}</div>
 					<div>{`${Math.round(
 						(Date.now() - new Date(item.violationTime).getTime()) /
 							1000 /

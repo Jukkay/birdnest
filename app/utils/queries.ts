@@ -27,3 +27,16 @@ export const fetchInfo = async ({ serialNumber }: { serialNumber: string }) => {
 	if (!response.ok) throw new Error('Unable to retrieve pilot information');
 	return await response.json();
 };
+
+export const getRefetchInterval = async() => {
+	const response = await fetch(
+		'https://assignments.reaktor.com/birdnest/drones'
+	);
+	if (!response.ok)
+		return 2000
+	const xml = await response.text();
+	const parser = new XMLParser();
+	const refetchInterval: number = parser.parse(xml).report.deviceInformation.updateIntervalMs
+	console.log('refetchInterval from XML: ',refetchInterval)
+	return refetchInterval
+}

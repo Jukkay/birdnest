@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { fetchInfo } from '../../utils/queries';
 import { PrismaClient } from '@prisma/client';
+import { IReturnType } from '../../components/DroneList';
 
 const prisma = new PrismaClient();
 
@@ -38,16 +39,16 @@ export default async function handler(
 					serialNumber: drone.serialNumber,
 					violationTime: new Date(),
 					distance: distance,
-					name: '',
-					email: '',
-					phoneNumber: '',
+					name: '-',
+					email: '-',
+					phoneNumber: '-',
 				});
 			}
 			drone.violator = violator;
 			return drone;
 		});
 		// Query pilot information for new violators
-		const newViolators = await Promise.all(
+		const newViolators: ISavedDrone[] = await Promise.all(
 			violators.map(async (violator: ISavedDrone) => {
 				const pilotInfo = await fetchInfo({
 					serialNumber: violator.serialNumber,
@@ -104,7 +105,7 @@ export default async function handler(
 		return res.status(200).json({
 			violators: freshData,
 			all: allDrones,
-		});
+		} as IReturnType);
 	} catch (err) {
 		console.error(err);
 	}
@@ -112,7 +113,7 @@ export default async function handler(
 
 export interface ISavedDrone {
 	serialNumber: string;
-	violationTime: Date;
+	violationTime: Date
 	distance: number;
 	name: string;
 	email: string;
