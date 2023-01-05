@@ -17,7 +17,7 @@ down:
 
 clean:
 	docker-compose down --remove-orphans
-	docker image rm -f birdnest_app
+	rm -rf .next
 
 install:
 	docker-compose run --rm birdnest_app "npm install"

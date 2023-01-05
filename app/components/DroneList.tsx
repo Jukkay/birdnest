@@ -5,6 +5,7 @@ import { IRawData, ISavedDrone } from '../pages/api/drones';
 import { fetchClientDroneList } from '../utils/queries';
 import { Canvas } from './Canvas';
 import { DroneListItem } from './DroneListItem';
+import { DroneListLoader } from './DroneListLoader';
 
 export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 	const { isLoading, isError, data, error } = useQuery({
@@ -16,14 +17,14 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 		return <div>Error: {(error as Error).message}</div>;
 	}
 	if (isLoading) {
-		return <div>Loading...</div>;
+		return <DroneListLoader />;
 	}
 	return (
-		<div className="flex w-full justify-around flex-wrap">
-			<Canvas drones={data.all} />
-			<div className='m-6 overflow-auto h-screen'>
+		<div className="flex w-full justify-around flex-wrap p-6">
+			<Canvas drones={data?.all} />
+			<div className="pr-6 bg-slate-400 rounded-lg shadow-lg w-4/12">
 				<h3>Violating drones</h3>
-				<div>
+				<div className="overflow-auto h-screen">
 					{data?.violators?.length > 0 ? (
 						data.violators.map((item: ISavedDrone) => (
 							<DroneListItem

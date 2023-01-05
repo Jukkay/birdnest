@@ -10,7 +10,7 @@ export default function RootLayout({
 }) {
 	return (
 		<html lang="en">
-			<body className=''>
+			<body className='bg-slate-700 m-6 py-3 rounded-lg shadow-lg'>
 				<section>
 					<ReactQueryWrapper>{children}</ReactQueryWrapper>
 				</section>

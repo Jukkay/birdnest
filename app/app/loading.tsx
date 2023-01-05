@@ -1,6 +1,12 @@
-const Loading = () => {
-    // You can add any UI inside Loading, including a Skeleton.
-    return <div>Loading...</div>
-  }
+import { DroneListLoader } from '../components/DroneListLoader';
 
-export default Loading
+const Loading = () => {
+	return (
+		<div>
+			<h1 className="">Birdnest</h1>
+			<DroneListLoader />
+		</div>
+	);
+};
+
+export default Loading;
