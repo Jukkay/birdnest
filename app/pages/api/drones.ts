@@ -77,7 +77,7 @@ export default async function handler(
 					where: {
 						serialNumber: violator.serialNumber,
 						distance: {
-							lt: violator.distance,
+							gt: violator.distance,
 						},
 					},
 				});

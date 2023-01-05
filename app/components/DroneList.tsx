@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { IRawData, ISavedDrone } from '../pages/api/drones';
 import { fetchClientDroneList } from '../utils/queries';
 import { Canvas } from './Canvas';
+import { DroneListItem } from './DroneListItem';
 
 export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 	const { isLoading, isError, data, error } = useQuery({
@@ -17,27 +18,25 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 	if (isLoading) {
 		return <div>Loading...</div>;
 	}
-	return data.violators && data.violators.length > 0 ? (
-		<div>
+	return (
+		<div className="flex w-full justify-around flex-wrap">
 			<Canvas drones={data.all} />
-			<h3>Violating drones</h3>
-			{data.violators.map((item: ISavedDrone) => (
-				<div key={item.serialNumber}>
-					<div>{item.serialNumber}</div>
-					<div>{item.name}</div>
-					<div>{item.email}</div>
-					<div>{item.phoneNumber}</div>
-					<div>{`Closest distance to the nest: ${(item.distance / 1000).toFixed(1)} meters`}</div>
-					<div>{`${Math.round(
-						(Date.now() - new Date(item.violationTime).getTime()) /
-							1000 /
-							60
-					)} minute(s) ago`}</div>
+			<div className='m-6 overflow-auto h-screen'>
+				<h3>Violating drones</h3>
+				<div>
+					{data?.violators?.length > 0 ? (
+						data.violators.map((item: ISavedDrone) => (
+							<DroneListItem
+								key={item.serialNumber}
+								item={item}
+							/>
+						))
+					) : (
+						<div>No drones found</div>
+					)}
 				</div>
-			))}
+			</div>
 		</div>
-	) : (
-		<div>No drones found</div>
 	);
 };
 

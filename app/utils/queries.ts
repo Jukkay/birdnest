@@ -37,6 +37,5 @@ export const getRefetchInterval = async() => {
 	const xml = await response.text();
 	const parser = new XMLParser();
 	const refetchInterval: number = parser.parse(xml).report.deviceInformation.updateIntervalMs
-	console.log('refetchInterval from XML: ',refetchInterval)
 	return refetchInterval
 }

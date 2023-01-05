@@ -5,7 +5,7 @@ const Page = async () => {
 	const refetchInterval = await getRefetchInterval()
 	return (
 		<div>
-			<h1>Birdnest</h1>
+			<h1 className="">Birdnest</h1>
 			<DroneList refetchInterval={refetchInterval}/>
 		</div>
 	);
