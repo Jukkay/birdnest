@@ -14,7 +14,7 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 		refetchInterval: refetchInterval,
 	});
 	if (isError) {
-		return <div>Error: {(error as Error).message}</div>;
+		return <div className='m-6'>Error: {(error as Error).message}</div>;
 	}
 	if (isLoading) {
 		return <DroneListLoader />;
@@ -33,7 +33,7 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 							/>
 						))
 					) : (
-						<div>No drones found</div>
+						<div className="m-6 text-xs">No drones found</div>
 					)}
 				</div>
 			</div>

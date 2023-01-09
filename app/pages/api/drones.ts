@@ -7,7 +7,7 @@ import { IReturnType } from '../../components/DroneList';
 const prisma = new PrismaClient();
 
 export default async function handler(
-	req: NextApiRequest,
+	_req: NextApiRequest,
 	res: NextApiResponse
 ) {
 	try {
@@ -76,12 +76,20 @@ export default async function handler(
 				const record = await prisma.drone.findFirst({
 					where: {
 						serialNumber: violator.serialNumber,
-						distance: {
-							gt: violator.distance,
-						},
 					},
 				});
-				if (record) {
+				if (!record) return;
+				// Update violation time
+				await prisma.drone.update({
+					where: {
+						serialNumber: violator.serialNumber,
+					},
+					data: {
+						violationTime: violator.violationTime,
+					},
+				});
+				// Update shortest violation distance
+				if (record.distance > violator.distance) {
 					await prisma.drone.update({
 						where: {
 							serialNumber: violator.serialNumber,
@@ -101,19 +109,29 @@ export default async function handler(
 				},
 			},
 		});
-		const freshData = await prisma.drone.findMany();
+		const freshData = await prisma.drone.findMany({
+			orderBy: [
+				{
+					violationTime: 'desc',
+				},
+			],
+		});
 		return res.status(200).json({
 			violators: freshData,
 			all: allDrones,
 		} as IReturnType);
 	} catch (err) {
 		console.error(err);
+		return res.status(500).json({
+			error: true,
+			message: 'Something went wrong',
+		});
 	}
 }
 
 export interface ISavedDrone {
 	serialNumber: string;
-	violationTime: Date
+	violationTime: Date;
 	distance: number;
 	name: string;
 	email: string;

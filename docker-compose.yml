@@ -1,45 +1,52 @@
-version: "3.8"
+version: '3.8'
 services:
-  birdnest_app:
-    image: 'node:lts-bullseye'
-    container_name: 'birdnest_app'
-    volumes:
-      - "./app:/app"
-    working_dir: "/app"
-    entrypoint: "/bin/bash -c"
-    command:
-      - "npm run dev"
-    ports:
-      - 3000:3000
-  birdnest_db:
-    container_name: 'birdnest_db'
-    image: postgres
-    ports:
-      - 5432:5432
-    volumes:
-      - db-data:/var/lib/postgresql/data
-    secrets:
-      - db_password
-    environment:
-      POSTGRES_USER: root
-      POSTGRES_DB: birdnest
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-      TZ: 'Europe/Helsinki'
-      PGTZ: 'Europe/Helsinki'
-  adminer:
-    image: adminer
-    ports:
-      - 8080:8080
-    environment:
-      ADMINER_DESIGN: pepa-linha
+    birdnest_app:
+        image: 'node:lts-bullseye'
+        container_name: 'birdnest_app'
+        volumes:
+            - './app:/app'
+        working_dir: '/app'
+        entrypoint: '/bin/bash -c'
+        command:
+            - 'npm run dev'
+        ports:
+            - 3000:3000
+    birdnest_db:
+        container_name: 'birdnest_db'
+        image: postgres
+        ports:
+            - 5432:5432
+        volumes:
+            - db-data:/var/lib/postgresql/data
+        secrets:
+            - db_password
+        environment:
+            POSTGRES_USER: root
+            POSTGRES_DB: birdnest
+            POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+            TZ: 'Europe/Helsinki'
+            PGTZ: 'Europe/Helsinki'
+    adminer:
+        image: adminer
+        ports:
+            - 8080:8080
+        environment:
+            ADMINER_DESIGN: pepa-linha
 secrets:
-  db_password:
-    file: ./config/secrets/db_password.secret
+    db_password:
+        file: ./config/secrets/db_password.secret
 volumes:
-  db-data:
-    name: birdnest-data
-    
-  # Build with:
-  #   make install
-  # Launch with:
-  #   make up
+    db-data:
+        name: birdnest-data
+
+# INSTALLATION
+#
+# Rename config/secrets/db_password.secret.example to db_password.secret and change the password if you wish
+# Rename app/.env.example to .env and update the password if you changed it
+# Build with:
+#   make install
+# Launch with:
+#   make up
+# Initialize DB with:
+#   make init-db
+# Open the app at http://localhost:3000/

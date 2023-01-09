@@ -25,5 +25,8 @@ install:
 goto-app:
 	docker-compose exec birdnest_app bash
 
+init-db:
+	docker-compose exec birdnest_app npx prisma migrate dev --name init
+
 logs:
 	docker-compose logs -f
