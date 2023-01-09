@@ -3,8 +3,6 @@
 import { useEffect, useRef } from 'react';
 import { IRawData } from '../pages/api/drones';
 import { IDrone } from './DroneList';
-import Skeleton from 'react-loading-skeleton'
-import 'react-loading-skeleton/dist/skeleton.css'
 
 const drawDrone = (context: CanvasRenderingContext2D, drone: IDrone) => {
 	const x = Math.floor(drone.positionX / 1000);
@@ -15,12 +13,9 @@ const drawDrone = (context: CanvasRenderingContext2D, drone: IDrone) => {
 };
 
 const drawBase = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
+	// Reset canvas
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
 	ctx.lineWidth = 1;
-	// Background
-	ctx.fillStyle = 'black';
-	ctx.fillRect(0, 0, canvas.width, canvas.height);
-	// ctx.strokeRect(0, 0, canvas.width, canvas.height)
 	// Crosshair
 	ctx.fillStyle = 'white';
 	ctx.fillRect(245, 245, 10, 10);
@@ -51,7 +46,7 @@ const drawBase = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
 	ctx.beginPath();
 	ctx.arc(250, 250, 250, 0, 2 * Math.PI);
 	ctx.stroke();
-	// Measures
+	// Scales
 	ctx.font = '15px sans-serif';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'bottom'
@@ -76,11 +71,12 @@ export const Canvas = ({ drones }: { drones: IRawData[] }) => {
 				drawDrone(ctx, drone);
 			});
 	}, [drones]);
+
 	return (
-		<div className="">
-			<canvas width="500" height="500" ref={ref}>
+		<div>
+			<canvas className="bg-black rounded-lg p-3" ref={ref} width={500} height={500}>
 				Violating drones are visualized here.
 			</canvas>
-		</div> || <Skeleton width={50}/>
+		</div>
 	);
 };
