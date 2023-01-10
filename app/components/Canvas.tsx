@@ -4,79 +4,48 @@ import { useEffect, useRef } from 'react';
 import { IRawData } from '../pages/api/drones';
 import { IDrone } from './DroneList';
 
-const drawDrone = (context: CanvasRenderingContext2D, drone: IDrone) => {
-	const x = Math.floor(drone.positionX / 1000);
-	const y = Math.floor(drone.positionY / 1000);
-	if (drone.violator) context.fillStyle = 'red';
-	else context.fillStyle = 'green';
-	context.fillRect(x, y, 5, 5);
+const Drones = ({ drones }: { drones: IRawData[] }) => {
+	return (<g>
+		{drones?.length > 0 &&
+			drones.map((drone: IRawData) => {
+				const x = Math.floor(drone.positionX / 1000);
+				const y = Math.floor(drone.positionY / 1000);
+				let params = { stroke: 'green', fill: 'green', strokeWidth: '1', r: '3' }
+				if (drone.violator) {
+					params.stroke = 'red'
+					params.fill = 'red'
+				}
+				return <circle cx={x} cy={y} {...params} />
+			})}
+	</g>)
 };
 
-const drawBase = (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
-	// Reset canvas
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	ctx.lineWidth = 1;
-	// Crosshair
-	ctx.fillStyle = 'white';
-	ctx.fillRect(245, 245, 10, 10);
-	ctx.strokeStyle = 'white';
-	ctx.beginPath();
-	ctx.moveTo(250, 0);
-	ctx.lineTo(250, 500);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.moveTo(0, 250);
-	ctx.lineTo(500, 250);
-	ctx.stroke();
-	// Circles
-	ctx.beginPath();
-	ctx.moveTo(250, 250);
-	ctx.lineTo(250, 0);
-	ctx.strokeStyle = 'red';
-	ctx.beginPath();
-	ctx.arc(250, 250, 100, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.strokeStyle = 'green';
-	ctx.beginPath();
-	ctx.arc(250, 250, 150, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.arc(250, 250, 200, 0, 2 * Math.PI);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.arc(250, 250, 250, 0, 2 * Math.PI);
-	ctx.stroke();
-	// Scales
-	ctx.font = '15px sans-serif';
-	ctx.textAlign = 'center';
-	ctx.textBaseline = 'bottom'
-	ctx.fillText('100m', 150, 250)
-	ctx.fillText('200m', 50, 250)
-	ctx.fillText('100m', 350, 250)
-	ctx.fillText('200m', 450, 250)
+const Base = () => {
+	return <>
+		<line x1={0} x2={500} y1={250} y2={250} stroke="white" strokeWidth={1} />
+		<line x1={250} x2={250} y1={0} y2={500} stroke="white" strokeWidth={1} />
+		<circle cx={250} cy={250} r={5} stroke="red" fill="red" strokeWidth={1} />
+		<circle cx={250} cy={250} r={100} stroke="red" fill="transparent" strokeWidth={1} />
+		<circle cx={250} cy={250} r={150} stroke="green" fill="transparent" strokeWidth={1} />
+		<circle cx={250} cy={250} r={200} stroke="green" fill="transparent" strokeWidth={1} />
+		<circle cx={250} cy={250} r={250} stroke="green" fill="transparent" strokeWidth={1} />
+		<text x="150" y="245" textAnchor='middle' fill="white">100m</text>
+		<text x="350" y="245" textAnchor='middle' fill="white">100m</text>
+		<text x="50" y="245" textAnchor='middle' fill="white">200m</text>
+		<text x="450" y="245" textAnchor='middle' fill="white">200m</text>
+	</>
 };
 
 export const Canvas = ({ drones }: { drones: IRawData[] }) => {
-	const ref = useRef<HTMLCanvasElement>(null);
-
-	// Draw coordinates on canvas
-	useEffect(() => {
-		const canvas = ref.current;
-		if (!canvas) return;
-		const ctx = canvas.getContext('2d');
-		if (!ctx) return;
-		drawBase(ctx, canvas);
-		drones?.length > 0 &&
-			drones.map((drone: IRawData) => {
-				drawDrone(ctx, drone);
-			});
-	}, [drones]);
 
 	return (
-		<div>
-			<canvas className="bg-black rounded-lg p-3" ref={ref} width={500} height={500}>
-				Violating drones are visualized here.
-			</canvas>
-		</div>
+		<svg version="1.1"
+			width={500} height={500}
+			xmlns="http://www.w3.org/2000/svg">
+			<g>
+				<Base />
+				<Drones drones={drones} />
+			</g>
+		</svg>
 	);
 };
