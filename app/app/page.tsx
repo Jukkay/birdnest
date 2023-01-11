@@ -3,12 +3,8 @@ import { getRefetchInterval } from '../utils/queries';
 
 const Page = async () => {
 	const refetchInterval = await getRefetchInterval()
-	return (
-		<div>
-			<h1 className="">Birdnest</h1>
-			<DroneList refetchInterval={refetchInterval}/>
-		</div>
-	);
+	return <DroneList refetchInterval={refetchInterval}/>
+
 };
 
 export default Page;

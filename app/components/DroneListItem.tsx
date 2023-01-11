@@ -3,7 +3,7 @@ import { ISavedDrone } from '../pages/api/drones';
 
 export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
 	return (
-		<div className="m-6 text-xs">
+		<div className="m-6 p-3 text-xs bg-slate-300 rounded-lg break-words">
 			<div>
 				<span className="font-semibold mr-3">Serial number:</span>
 				{item.serialNumber}
