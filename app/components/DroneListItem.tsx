@@ -2,6 +2,12 @@
 import { ISavedDrone } from '../pages/api/drones';
 
 export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
+	const time = Math.round(
+		(Date.now() - new Date(item.violationTime).getTime()) /
+			1000 /
+			60
+	)
+	const lastViolation = time === 1 ? '1 minute ago' : `${time} minutes ago`
 	return (
 		<div className="m-6 p-3 text-xs bg-slate-300 rounded-lg break-words">
 			<div>
@@ -28,11 +34,7 @@ export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
 			</div>
 			<div>
 				<span className="font-semibold mr-3">Last violation:</span>
-				{`${Math.round(
-					(Date.now() - new Date(item.violationTime).getTime()) /
-						1000 /
-						60
-				)} minute(s) ago`}
+				{lastViolation}
 			</div>
 		</div>
 	);

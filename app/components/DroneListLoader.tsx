@@ -9,7 +9,7 @@ export const DroneListLoader = () => {
 			</div>
 			<div className="lg:m-6 p-6 bg-slate-400 rounded-lg shadow-lg relative w-full lg:w-2/6 outer-list lg:h-auto">
 				<h3>Violating drones</h3>
-				<div className="overflow-y-scroll absolute top-20 bottom-2 left-2 right-2 inner-list lg:h-auto">
+				<div className="overflow-auto absolute top-20 bottom-2 left-2 right-2 inner-list lg:h-auto">
 					<DroneListItemLoader />
 					<DroneListItemLoader />
 					<DroneListItemLoader />

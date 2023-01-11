@@ -26,7 +26,7 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 			</div>
 			<div className="lg:m-6 p-6 bg-slate-400 rounded-lg shadow-lg relative w-full lg:w-2/6 outer-list lg:h-auto">
 				<h3>Violating drones</h3>
-				<div className="overflow-y-scroll absolute top-20 bottom-2 left-2 right-2 inner-list lg:h-auto">
+				<div className="overflow-auto absolute top-20 bottom-2 left-2 right-2 inner-list lg:h-auto">
 					{data?.violators?.length > 0 ? (
 						data.violators.map((item: ISavedDrone) => (
 							<DroneListItem
@@ -43,11 +43,8 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 	);
 };
 
-export interface IDrone {
+export interface IDrone extends IPilot {
 	serialNumber: string;
-	positionY: number;
-	positionX: number;
-	violator: boolean;
 	violationTime?: number;
 }
 export interface IPilot {
