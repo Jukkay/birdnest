@@ -5,20 +5,36 @@ import { IRawData, ISavedDrone } from '../pages/api/drones';
 import { fetchClientDroneList } from '../utils/queries';
 import { Visualizer } from './Visualizer';
 import { DroneListItem } from './DroneListItem';
-import { DroneListLoader } from './DroneListLoader';
+import { useEffect, useState } from 'react';
+import { io, Socket } from 'socket.io-client';
+import { socket } from '../utils/socket';
 
-export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
-	const { isLoading, isError, data, error } = useQuery({
-		queryKey: ['drones'],
-		queryFn: fetchClientDroneList,
-		refetchInterval: refetchInterval,
-	});
-	if (isError) {
-		return <div className="m-6">Error: {(error as Error).message}</div>;
-	}
-	if (isLoading) {
-		return <DroneListLoader />;
-	}
+export const DroneList = () => {
+	const initSocket = async () => {
+		try {
+			await fetch('/api/subscribe');
+			if (socket.disconnected) socket.open();
+			socket.on('connect', () => {
+				console.log('Socket connected');
+			});
+			socket.on('update', returnData => {
+				console.log('data received via socket', returnData)
+				setData(returnData)
+			})
+		} catch (err) {
+			console.error('Failed to initialize socket connection');
+		}
+	};
+	useEffect(() => {
+		initSocket();
+		return () => {
+			socket.removeAllListeners('update');
+			socket.removeAllListeners('connect');
+		}
+	}, []);
+
+	const [data, setData] = useState<IReturnType>({ all: [], violators: [] });
+
 	return (
 		<div className="flex justify-around flex-wrap p-6 items-stretch min-h-full w-full relative">
 			<div className="mb-6 lg:m-6 relative lg:w-1/2 w-full">
@@ -35,7 +51,7 @@ export const DroneList = ({ refetchInterval }: { refetchInterval: number }) => {
 							/>
 						))
 					) : (
-						<div className="m-6 text-xs">No drones found</div>
+						<div className="m-6 p-6 text-xs">No drones found</div>
 					)}
 				</div>
 			</div>
