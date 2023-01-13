@@ -1,7 +1,6 @@
 import { XMLParser } from 'fast-xml-parser';
 
 // API queries
-
 export const fetchClientDroneList = async () => {
 	const response = await fetch('/api/drones');
 	return await response.json();
