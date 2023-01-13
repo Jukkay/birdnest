@@ -1,10 +1,8 @@
 import { DroneList } from '../components/DroneList';
-import { getRefetchInterval } from '../utils/queries';
 
+// Children to be displayed on layout
 const Page = async () => {
-	const refetchInterval = await getRefetchInterval()
-	return <DroneList refetchInterval={refetchInterval}/>
-
+	return <DroneList />
 };
 
 export default Page;

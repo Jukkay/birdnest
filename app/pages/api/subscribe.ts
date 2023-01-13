@@ -1,6 +1,9 @@
 import { NextApiRequest } from 'next/types';
 import { Server } from 'socket.io';
 import {
+	IRawData,
+	IReturnType,
+	ISavedDrone,
 	NextApiResponseWithSocket,
 	ServerToClientEvents,
 } from '../../types';
@@ -8,50 +11,44 @@ import { getRefetchInterval } from '../../utils/queries';
 import { XMLParser } from 'fast-xml-parser';
 import { fetchInfo } from '../../utils/queries';
 import { PrismaClient } from '@prisma/client';
-import { IReturnType } from '../../components/DroneList';
-import { IRawData, ISavedDrone } from './drones';
 import {
 	setIntervalAsync,
 	clearIntervalAsync,
 } from 'set-interval-async/dynamic';
 
-let queriesOn = false
+// This endpoint is called everytime a user lands on the page. API queries are started when there's active users and stopped when there is none.
+
+let queriesOn = false;
+
 export default async function handler(
 	_req: NextApiRequest,
 	res: NextApiResponseWithSocket
 ) {
-	if (res.socket.server.io && queriesOn) {
-		console.log('Socket connection already initialized. Doing nothing.');
-	} else {
-		console.log('Initializing socket connection');
-		const io = new Server<
-			ServerToClientEvents
-		>(res.socket.server);
-		res.socket.server.io = io;
-		const refetchInterval = await getRefetchInterval();
-		subscribeToUpdates(io, refetchInterval, res);
-        queriesOn = true;
-	}
+	if (res.socket.server.io && queriesOn) return res.end();
+	console.log('Initializing socket connection and starting API requests.');
+	const io = new Server<ServerToClientEvents>(res.socket.server);
+	res.socket.server.io = io;
+
+	// Get current API refresh interval so we can use it as our refetch interval
+	const refetchInterval = await getRefetchInterval();
+	subscribeToUpdates(io, refetchInterval);
+	queriesOn = true;
 	res.end();
 }
 
 const prisma = new PrismaClient();
 
-const subscribeToUpdates = (
-	io: Server,
-	refetchInterval: number,
-    res: NextApiResponseWithSocket
-) => {
+const subscribeToUpdates = (io: Server, refetchInterval: number) => {
 	const timer = setIntervalAsync(async () => {
 		try {
 			const response = await fetch(
 				'https://assignments.reaktor.com/birdnest/drones'
 			);
 			if (!response.ok) throw new Error('Failed to retrieve drone data');
-			console.log('Drone data retrieved');
 			const xml = await response.text();
 			const parser = new XMLParser();
 			const data = parser.parse(xml).report.capture.drone;
+
 			// Find violators and save distances
 			const violators: ISavedDrone[] = [];
 			const allDrones: IRawData[] = data.map((drone: IRawData) => {
@@ -74,6 +71,7 @@ const subscribeToUpdates = (
 				drone.violator = violator;
 				return drone;
 			});
+
 			// Query pilot information for new violators
 			const newViolators: ISavedDrone[] = await Promise.all(
 				violators.map(async (violator: ISavedDrone) => {
@@ -88,7 +86,7 @@ const subscribeToUpdates = (
 					};
 				})
 			);
-			// console.log('newViolators: ', newViolators);
+
 			// Save new violators
 			if (newViolators.length > 0) {
 				await prisma.drone.createMany({
@@ -96,8 +94,8 @@ const subscribeToUpdates = (
 					skipDuplicates: true,
 				});
 			}
-			// Update old violators
-			// Prisma doesn't accept multiple conditions on updates so we need to find and update separately.
+
+			// Update old violators. Prisma doesn't accept multiple conditions on updates so we need to find and update separately.
 			await Promise.all(
 				violators.map(async (violator: ISavedDrone) => {
 					const record = await prisma.drone.findFirst({
@@ -106,6 +104,7 @@ const subscribeToUpdates = (
 						},
 					});
 					if (!record) return;
+
 					// Update violation time
 					await prisma.drone.update({
 						where: {
@@ -115,6 +114,7 @@ const subscribeToUpdates = (
 							violationTime: violator.violationTime,
 						},
 					});
+
 					// Update shortest violation distance
 					if (record.distance > violator.distance) {
 						await prisma.drone.update({
@@ -128,7 +128,8 @@ const subscribeToUpdates = (
 					}
 				})
 			);
-			// Purge old data
+
+			// Purge data older than 10min as per requirements
 			await prisma.drone.deleteMany({
 				where: {
 					violationTime: {
@@ -146,17 +147,19 @@ const subscribeToUpdates = (
 			const returnData: IReturnType = {
 				violators: freshData,
 				all: allDrones,
+				refetchInterval: refetchInterval,
 			};
-			console.log('Sendind data via socket');
+
+			// Emit data to all connected user. Volatile means sent data is discarded if it's not received.
 			io.volatile.emit('update', returnData);
+
+			// Stop interval if no sockets connected to avoid unnecessary API requests
 			const connectedSockets = await io.fetchSockets();
-            console.log('Connected sockets: ', connectedSockets.length);
-			// Stop interval if no sockets connected
 			if (connectedSockets.length === 0) {
 				(async () => {
-                    console.log('No sockets connected. Clearing interval.')
+					console.log('No sockets connected. Stopping API requests.');
 					await clearIntervalAsync(timer);
-                    queriesOn = false
+					queriesOn = false;
 				})();
 			}
 		} catch (err) {
@@ -164,4 +167,3 @@ const subscribeToUpdates = (
 		}
 	}, refetchInterval);
 };
-

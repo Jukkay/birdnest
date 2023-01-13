@@ -1,3 +1,5 @@
+// Loading component to display instead of DroneListItem
+
 const DroneListItemLoader = () => {
 	return (
 		<div role="status" className="max-w-sm animate-pulse m-6 p-3 bg-slate-300 rounded-lg">

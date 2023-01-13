@@ -1,19 +1,6 @@
-import { PrismaClient } from '@prisma/client';
 import { XMLParser } from 'fast-xml-parser';
-import { IReturnType } from '../components/DroneList';
 
-// const prisma = new PrismaClient()
-// export const fetchServerDroneList = async () => {
-// 	try {
-// 		const freshData = await prisma.drone.findMany();
-// 		return {
-// 			violators: freshData,
-// 			all: data,
-// 		};
-// 	} catch (err) {
-// 		console.error(err);
-// 	}
-// };
+// API queries
 
 export const fetchClientDroneList = async () => {
 	const response = await fetch('/api/drones');

@@ -1,6 +1,4 @@
-'use client';
-
-import { IRawData } from '../pages/api/drones';
+import { IRawData } from '../types';
 import { Base } from './Base';
 
 const Drones = ({ drones }: { drones: IRawData[] }) => {

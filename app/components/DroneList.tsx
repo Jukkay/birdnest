@@ -1,28 +1,36 @@
 'use client';
+// Server component is the default so we use 'use client' to tell next this component is rendered client side. Using hooks isn't possible otherwise.
 
-import { useQuery } from '@tanstack/react-query';
-import { IRawData, ISavedDrone } from '../pages/api/drones';
-import { fetchClientDroneList } from '../utils/queries';
 import { Visualizer } from './Visualizer';
 import { DroneListItem } from './DroneListItem';
 import { useEffect, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
 import { socket } from '../utils/socket';
+import { IReturnType, ISavedDrone } from '../types';
+import { DroneListLoader } from './DroneListLoader';
 
+// Main component of the page.
 export const DroneList = () => {
+	const [loading, setLoading] = useState(false);
+	const [data, setData] = useState<IReturnType>({
+		all: [],
+		violators: [],
+		refetchInterval: 2000,
+	});
+
 	const initSocket = async () => {
 		try {
+			setLoading(true);
 			await fetch('/api/subscribe');
 			if (socket.disconnected) socket.open();
 			socket.on('connect', () => {
-				console.log('Socket connected');
+				console.log('Connected to server');
 			});
-			socket.on('update', returnData => {
-				console.log('data received via socket', returnData)
-				setData(returnData)
-			})
+			socket.on('update', (returnData) => {
+				setData(returnData);
+				setLoading(false);
+			});
 		} catch (err) {
-			console.error('Failed to initialize socket connection');
+			console.error('Failed to initialize server connection');
 		}
 	};
 	useEffect(() => {
@@ -30,12 +38,12 @@ export const DroneList = () => {
 		return () => {
 			socket.removeAllListeners('update');
 			socket.removeAllListeners('connect');
-		}
+		};
 	}, []);
 
-	const [data, setData] = useState<IReturnType>({ all: [], violators: [] });
-
-	return (
+	return loading ? (
+		<DroneListLoader />
+	) : (
 		<div className="flex justify-around flex-wrap p-6 items-stretch min-h-full w-full relative">
 			<div className="mb-6 lg:m-6 relative lg:w-1/2 w-full">
 				<Visualizer drones={data?.all} />
@@ -55,20 +63,9 @@ export const DroneList = () => {
 					)}
 				</div>
 			</div>
+			<p className="absolute bottom-0">{`Information is updated every ${
+				(data.refetchInterval / 1000).toString() || '2'
+			} seconds`}</p>
 		</div>
 	);
 };
-
-export interface IDrone extends IPilot {
-	serialNumber: string;
-	violationTime?: number;
-}
-export interface IPilot {
-	positionY: number;
-	positionX: number;
-	violator: boolean;
-}
-export interface IReturnType {
-	violators: ISavedDrone[];
-	all: IRawData[];
-}

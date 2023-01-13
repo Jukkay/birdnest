@@ -25,14 +25,18 @@
     "react-icons": "^4.7.1",
     "react-loading-skeleton": "^3.1.0",
     "set-interval-async": "^3.0.3",
-    "socket.io": "^4.5.4",
     "socket.io-client": "^4.5.4",
     "typescript": "4.9.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.13",
+    "bufferutil": "^4.0.7",
     "postcss": "^8.4.20",
     "prisma": "^4.8.0",
-    "tailwindcss": "^3.2.4"
+    "socket.io": "^4.5.4",
+    "tailwindcss": "^3.2.4",
+    "utf-8-validate": "^5.0.10",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1"
   }
 }

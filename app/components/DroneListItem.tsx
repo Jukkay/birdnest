@@ -1,5 +1,4 @@
-'use client';
-import { ISavedDrone } from '../pages/api/drones';
+import { ISavedDrone } from '../types';
 
 export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
 	const time = Math.round(

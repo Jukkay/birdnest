@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { BsGithub} from "react-icons/bs";
+
 export const Footer = () => {
 	return (
 		<div className="lg:pb-6">

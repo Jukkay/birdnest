@@ -1,3 +1,4 @@
+// Database config
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,6 +8,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Tables
 model Drone {
   id            Int      @id @default(autoincrement())
   serialNumber  String   @unique

@@ -1,6 +1,7 @@
 import { VisualizerLoader } from './VisualizerLoader';
 import DroneListItemLoader from './DroneListItemLoader';
 
+// Loading component to display instead of DroneList
 export const DroneListLoader = () => {
 	return (
 		<div className="flex justify-around flex-wrap p-6 items-stretch min-h-full w-full relative">
@@ -15,6 +16,9 @@ export const DroneListLoader = () => {
 					<DroneListItemLoader />
 				</div>
 			</div>
+			<p className="absolute bottom-0">
+				Information is updated every 2 seconds
+			</p>
 		</div>
 	);
 };
