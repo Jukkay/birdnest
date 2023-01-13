@@ -10,11 +10,11 @@ import {
 import { getRefetchInterval } from '../../utils/queries';
 import { XMLParser } from 'fast-xml-parser';
 import { fetchInfo } from '../../utils/queries';
-import { PrismaClient } from '@prisma/client';
 import {
 	setIntervalAsync,
 	clearIntervalAsync,
 } from 'set-interval-async/dynamic';
+import { prisma } from '../../utils/prisma';
 
 // This endpoint is called everytime a user lands on the page. API queries are started when there's active users and stopped when there is none.
 
@@ -35,8 +35,6 @@ export default async function handler(
 	queriesOn = true;
 	res.end();
 }
-
-const prisma = new PrismaClient();
 
 const subscribeToUpdates = (io: Server, refetchInterval: number) => {
 	const timer = setIntervalAsync(async () => {
