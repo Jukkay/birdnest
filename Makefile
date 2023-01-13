@@ -34,7 +34,7 @@ logs:
 build:
 	docker-compose run --rm birdnest_app "npm run build"
 up-production:
-	docker compose -f docker-compose.yml -f production.yml up
+	docker-compose -f docker-compose.yml -f production.yml up
 
 up-production-detached:
 	docker compose -f docker-compose.yml -f production.yml up -d
