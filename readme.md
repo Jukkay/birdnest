@@ -23,12 +23,6 @@ The back end takes API refresh interval from response's meta data and uses it as
 
 The front end is built using Next.js, React and TypeScript. The back end uses Next.js' built in API functionality. The project is test driving Next 13's new app directory but server components are used in a very limited fashion due to the nature of the app. The connection between the front end and the back end happens using sockets with Socket.io. The radar is an SVG composed of React components based on live data.
 
-- Next.js/React
-- TypeScript
-- Socket.io
-- Prisma (Postresql)
-- Tailwind CSS
-
 ### How can I run it?
 
 The app is deployed at:
