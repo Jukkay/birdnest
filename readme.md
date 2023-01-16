@@ -38,16 +38,16 @@ If you wish to run the project yourself the repository includes docker-compose a
 
 Using make:
 
-1. Clone the repository
-2. Use command line `make install` to install client
-3. Use command line `make up` to build and run the project
-4. Use command line `make init-db` to initialize the database connection
-5. The app can be accessed at http://localhost:3000
+1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git`
+2. Use command line `make birdnest` to start install script
+3. The app can be accessed at http://localhost:3000
 
 Using docker-compose:
 
-1. Clone the repository
-2. Use command line `make install` to install client
-3. Use command line `make up` to build and run the project
-4. Use command line `make init-db` to initialize the database connection
-5. The app can be accessed at http://localhost:3000
+1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git dev`
+2. Use command line `docker-compose run --rm birdnest_app "npm install"` to install packages
+3. Use command line `docker-compose run --rm birdnest_app "npm run build"` to build the project
+4. Use command line `docker compose -f docker-compose.yml -f production.yml up -d` to start the containers detached
+5. Use command line `docker-compose exec birdnest_app npx prisma migrate dev --name init` initialize Prisma
+6. Use command line `docker-compose logs -f` to see the back end log (optional)
+7. The app can be accessed at http://localhost:3000
