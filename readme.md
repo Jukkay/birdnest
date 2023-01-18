@@ -42,6 +42,8 @@ Using make:
 3. Use command line `make` to start install script
 4. When the script is complete, the app can be accessed at http://localhost:3000
 
+OR 
+
 Using docker-compose:
 
 1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git birdnest`
