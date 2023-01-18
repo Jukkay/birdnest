@@ -1,6 +1,6 @@
 # Birdnest
 
-Birdnest visualizes API information of drone movement and lists drones violating a no drone zone.
+Birdnest is a web app that visualizes drone location data from an API and lists drones violating a no drone zone.
 
 https://birdnest-jukkay.fly.dev/
 
