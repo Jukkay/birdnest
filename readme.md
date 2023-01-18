@@ -24,22 +24,27 @@ The back end takes API refresh interval from response's meta data and uses it as
 
 The front end is built using Next.js, React, TypeScript and TailwindCSS. The back end uses Next.js' built in API functionality. The project is test driving Next 13's new app directory but server components are used in a very limited fashion due to the nature of the app. The connection between the front end and the back end happens using sockets with Socket.io. The radar is an SVG composed of React components based on live data.
 
-### How can I run it?
+### Where can I see it?
 
 The app is deployed at:
 https://birdnest-jukkay.fly.dev/
 
-If you wish to run the project yourself the repository includes docker-compose and Makefile files that can be used to build and run the project. Docker is required to take advantage of these. [Make](https://linuxhint.com/make-command-linux/) is required to use make commands.
+### How can I run it locally?
+
+Prerequisites:
+* [Docker](https://docker.com) must be installed
+* [make](https://www.gnu.org/software/make/) is optional but highly recommended `sudo apt-get update && sudo apt-get -y install make`
 
 Using make:
 
-1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git`
-2. Use command line `make birdnest` to start install script
-3. The app can be accessed at http://localhost:3000
+1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git birdnest`
+2. Move to the created directory `cd birdnest`
+3. Use command line `make` to start install script
+4. When the script is complete, the app can be accessed at http://localhost:3000
 
 Using docker-compose:
 
-1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git dev`
+1. Clone the dev branch of this repository `git clone -b dev git@github.com:Jukkay/birdnest.git birdnest`
 2. Use command line `docker-compose run --rm birdnest_app "npm install"` to install packages
 3. Use command line `docker-compose run --rm birdnest_app "npm run build"` to build the project
 4. Use command line `docker compose -f docker-compose.yml -f production.yml up -d` to start the containers detached
