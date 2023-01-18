@@ -54,7 +54,7 @@ Using docker-compose:
 6. Use command line `docker-compose logs -f` to see the back end log (optional)
 7. The app can be accessed at http://localhost:3000
 
-### Background
+### Why was it built?
 
 Birdnest is a project made as a pre-assignment for a job application for Reaktor Developer Trainee program.
 
