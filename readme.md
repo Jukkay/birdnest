@@ -22,7 +22,7 @@ The back end takes API refresh interval from response's meta data and uses it as
 * [TailwindCSS](https://tailwindcss.com/)
 * [Docker](https://docker.com)
 
-The front end is built using Next.js, React, TypeScript and TailwindCSS. The back end uses Next.js' built in API functionality. The project is test driving Next 13's new app directory but server components are used in a very limited fashion due to the nature of the app. The connection between the front end and the back end happens using sockets with Socket.io. The radar is an SVG composed of React components based on live data.
+The front end is built using Next.js, React, TypeScript and TailwindCSS. The back end uses Next.js' built in API functionality. The project is test driving Next 13's new app directory but server components are used in a very limited fashion due to the nature of the app. The connection between the front end and the back end happens using sockets with Socket.io. The radar is an SVG composed of React components based on the live data.
 
 ### Where can I see it?
 
