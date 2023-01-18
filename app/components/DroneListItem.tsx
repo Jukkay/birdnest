@@ -2,11 +2,10 @@ import { ISavedDrone } from '../types';
 
 export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
 	const time = Math.round(
-		(Date.now() - new Date(item.violationTime).getTime()) /
-			1000 /
-			60
-	)
-	const lastViolation = time === 1 ? '1 minute ago' : `${time} minutes ago`
+		(Date.now() - new Date(item.violationTime).getTime()) / 1000 / 60
+	);
+	const lastViolation = time === 1 ? '1 minute ago' : `${time} minutes ago`;
+	const closestDistance = `${(item.distance / 1000).toFixed(1)} m`;
 	return (
 		<div className="m-6 p-3 text-xs bg-slate-300 rounded-lg break-words">
 			<div>
@@ -29,7 +28,7 @@ export const DroneListItem = ({ item }: { item: ISavedDrone }) => {
 				<span className="font-semibold mr-3">
 					Closest distance to the nest:
 				</span>
-				{`${(item.distance / 1000).toFixed(1)} m`}
+				{closestDistance}
 			</div>
 			<div>
 				<span className="font-semibold mr-3">Last violation:</span>
