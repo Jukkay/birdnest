@@ -1,5 +1,5 @@
 import { VisualizerLoader } from './VisualizerLoader';
-import DroneListItemLoader from './DroneListItemLoader';
+import DroneListItemSkeleton from './DroneListItemSkeleton';
 
 // Loading component to display instead of DroneList
 export const DroneListLoader = () => {
@@ -11,9 +11,9 @@ export const DroneListLoader = () => {
 			<div className="lg:m-6 p-6 bg-slate-400 rounded-lg shadow-lg relative w-full lg:w-2/6 outer-list lg:h-auto">
 				<h3>Violating drones</h3>
 				<div className="overflow-auto absolute top-20 bottom-2 left-2 right-2 inner-list lg:h-auto">
-					<DroneListItemLoader />
-					<DroneListItemLoader />
-					<DroneListItemLoader />
+					<DroneListItemSkeleton />
+					<DroneListItemSkeleton />
+					<DroneListItemSkeleton />
 				</div>
 			</div>
 			<p className="absolute bottom-0">
