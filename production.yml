@@ -1,8 +1,0 @@
-services:
-  birdnest_app:
-    command:
-      - "npm start"
-    restart: always
-  
-  birdnest_db:
-    restart: always

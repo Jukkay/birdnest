@@ -10,7 +10,7 @@ datasource db {
 
 // Tables
 model Drone {
-  id            Int      @id @default(autoincrement())
+  id            String   @id @default(cuid())
   serialNumber  String   @unique
   name          String
   email         String

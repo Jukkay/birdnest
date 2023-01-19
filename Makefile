@@ -4,6 +4,11 @@ create:
 up:
 	docker-compose up
 
+up-production:
+	docker image rm -f birdnest_app
+	docker build
+	docker-compose -f docker-compose.yml -f production.yml up
+ 
 restart:
 	docker-compose up -d
 
