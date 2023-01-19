@@ -43,44 +43,19 @@ export default async function handler(
 	} catch (err) {}
 }
 
+// Set interval to fetch, process and send drone data
 const subscribeToUpdates = (socketServer: Server, refetchInterval: number) => {
 	const timer = setIntervalAsync(async () => {
 		try {
 			const data = await fetchDroneList();
-
-			// Get lists of violators and all drones with distances to the hive
 			const [violators, allDrones] = formatDroneLists(data);
-
-			// Save new violators and update info for existing ones
-			await Promise.all(
-				violators.map(async (violator: ISavedDrone) => {
-					const record = await prisma.drone.findFirst({
-						where: {
-							serialNumber: violator.serialNumber,
-						},
-					});
-					if (!record) {
-						await saveNewViolator(violator);
-						return;
-					}
-					await updateViolationTime(violator);
-					// Save closest distance to the hive
-					if (record.distance > violator.distance)
-						await updateViolationDistance(violator);
-				})
-			);
-
-			// Purge data older than 10min as per requirements
+			await Promise.all(violators.map(saveOrUpdateViolator));
 			await deleteExpiredData();
-
-			// Stage data to be emitted
-			const currentViolators = await getCurrentViolators();
 			const returnData: IReturnType = {
-				violators: currentViolators,
+				violators: await getCurrentViolators(),
 				all: allDrones,
 				refetchInterval: refetchInterval,
 			};
-
 			// Emit data to all connected user. Volatile means sent data is discarded if it's not received.
 			socketServer.volatile.emit('update', returnData);
 
@@ -122,6 +97,25 @@ const formatDroneLists = (data: IRawData[]) => {
 	return [violators, allDrones] as formatReturnType;
 };
 
+// Save new violators and update info for existing ones
+const saveOrUpdateViolator = async (violator: ISavedDrone) => {
+	try {
+		const record = await prisma.drone.findFirst({
+			where: {
+				serialNumber: violator.serialNumber,
+			},
+		});
+		if (!record) {
+			saveNewViolator(violator);
+			return;
+		}
+		updateViolationTime(violator);
+		// Save closest distance to the hive
+		if (record.distance > violator.distance)
+			updateViolationDistance(violator);
+	} catch (err) {}
+};
+
 // Get new pilot data and save to DB
 const saveNewViolator = async (violator: ISavedDrone) => {
 	const pilotInfo = await fetchInfo({
@@ -137,7 +131,7 @@ const saveNewViolator = async (violator: ISavedDrone) => {
 	});
 };
 
-const updateViolationTime = async (violator: ISavedDrone) => {
+const updateViolationTime = async(violator: ISavedDrone) => {
 	await prisma.drone.update({
 		where: {
 			serialNumber: violator.serialNumber,
@@ -147,7 +141,7 @@ const updateViolationTime = async (violator: ISavedDrone) => {
 		},
 	});
 };
-const updateViolationDistance = async (violator: ISavedDrone) => {
+const updateViolationDistance = async(violator: ISavedDrone) => {
 	await prisma.drone.update({
 		where: {
 			serialNumber: violator.serialNumber,
@@ -169,7 +163,7 @@ const deleteExpiredData = async () => {
 };
 
 const getCurrentViolators = async () => {
-	return await prisma.drone.findMany({
+	return prisma.drone.findMany({
 		orderBy: [
 			{
 				violationTime: 'desc',
