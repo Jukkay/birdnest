@@ -1,14 +1,14 @@
 import { NextApiRequest } from 'next/types';
 import { Server } from 'socket.io';
 import {
+	formatReturnType,
 	IRawData,
 	IReturnType,
 	ISavedDrone,
 	NextApiResponseWithSocket,
 	ServerToClientEvents,
 } from '../../types';
-import { getRefetchInterval } from '../../utils/queries';
-import { XMLParser } from 'fast-xml-parser';
+import { fetchDroneList, getRefetchInterval } from '../../utils/queries';
 import { fetchInfo } from '../../utils/queries';
 import {
 	setIntervalAsync,
@@ -24,144 +24,150 @@ export default async function handler(
 	_req: NextApiRequest,
 	res: NextApiResponseWithSocket
 ) {
-	if (res.socket.server.io && queriesOn) return res.end();
-	console.log('Initializing socket connection and starting API requests.');
-	const io = new Server<ServerToClientEvents>(res.socket.server);
-	res.socket.server.io = io;
-
-	// Get current API refresh interval so we can use it as our refetch interval
-	const refetchInterval = await getRefetchInterval();
-	subscribeToUpdates(io, refetchInterval);
-	queriesOn = true;
-	res.end();
+	try {
+		// Create socket server instance if not already created
+		if (!res.socket.server.io) {
+			res.socket.server.io = new Server<ServerToClientEvents>(
+				res.socket.server
+			);
+		}
+		const socketServer = res.socket.server.io;
+		// Start queries if not active
+		if (!queriesOn) {
+			// Get current API refresh interval so we can use it as our refetch interval
+			const refetchInterval = await getRefetchInterval();
+			subscribeToUpdates(socketServer, refetchInterval);
+			queriesOn = true;
+		}
+		res.end();
+	} catch (err) {}
 }
 
-const subscribeToUpdates = (io: Server, refetchInterval: number) => {
+// Set interval to fetch, process and send drone data
+const subscribeToUpdates = (socketServer: Server, refetchInterval: number) => {
 	const timer = setIntervalAsync(async () => {
 		try {
-			const response = await fetch(
-				'https://assignments.reaktor.com/birdnest/drones'
-			);
-			if (!response.ok) throw new Error('Failed to retrieve drone data');
-			const xml = await response.text();
-			const parser = new XMLParser();
-			const data = parser.parse(xml).report.capture.drone;
-
-			// Find violators and save distances
-			const violators: ISavedDrone[] = [];
-			const allDrones: IRawData[] = data.map((drone: IRawData) => {
-				const x = Math.abs(drone.positionX - 250000);
-				const y = Math.abs(drone.positionY - 250000);
-				const distance = Math.sqrt(x * x + y * y);
-				const rad = 100000;
-				let violator = false;
-				if (distance <= rad) {
-					violator = true;
-					violators.push({
-						serialNumber: drone.serialNumber,
-						violationTime: new Date(),
-						distance: distance,
-						name: '-',
-						email: '-',
-						phoneNumber: '-',
-					});
-				}
-				drone.violator = violator;
-				return drone;
-			});
-
-			// Query pilot information for new violators
-			const newViolators: ISavedDrone[] = await Promise.all(
-				violators.map(async (violator: ISavedDrone) => {
-					const pilotInfo = await fetchInfo({
-						serialNumber: violator.serialNumber,
-					});
-					return {
-						...violator,
-						name: `${pilotInfo.firstName} ${pilotInfo.lastName}`,
-						email: pilotInfo.email,
-						phoneNumber: pilotInfo.phoneNumber,
-					};
-				})
-			);
-
-			// Save new violators
-			if (newViolators.length > 0) {
-				await prisma.drone.createMany({
-					data: newViolators,
-					skipDuplicates: true,
-				});
-			}
-
-			// Update old violators. Prisma doesn't accept multiple conditions on updates so we need to find and update separately.
-			await Promise.all(
-				violators.map(async (violator: ISavedDrone) => {
-					const record = await prisma.drone.findFirst({
-						where: {
-							serialNumber: violator.serialNumber,
-						},
-					});
-					if (!record) return;
-
-					// Update violation time
-					await prisma.drone.update({
-						where: {
-							serialNumber: violator.serialNumber,
-						},
-						data: {
-							violationTime: violator.violationTime,
-						},
-					});
-
-					// Update shortest violation distance
-					if (record.distance > violator.distance) {
-						await prisma.drone.update({
-							where: {
-								serialNumber: violator.serialNumber,
-							},
-							data: {
-								distance: violator.distance,
-							},
-						});
-					}
-				})
-			);
-
-			// Purge data older than 10min as per requirements
-			await prisma.drone.deleteMany({
-				where: {
-					violationTime: {
-						lt: new Date(new Date().getTime() - 10 * 60 * 1000),
-					},
-				},
-			});
-			const freshData = await prisma.drone.findMany({
-				orderBy: [
-					{
-						violationTime: 'desc',
-					},
-				],
-			});
+			const data = await fetchDroneList();
+			const [violators, allDrones] = formatDroneLists(data);
+			await Promise.all(violators.map(saveOrUpdateViolator));
+			await deleteExpiredData();
 			const returnData: IReturnType = {
-				violators: freshData,
+				violators: await getCurrentViolators(),
 				all: allDrones,
 				refetchInterval: refetchInterval,
 			};
-
 			// Emit data to all connected user. Volatile means sent data is discarded if it's not received.
-			io.volatile.emit('update', returnData);
+			socketServer.volatile.emit('update', returnData);
 
 			// Stop interval if no sockets connected to avoid unnecessary API requests
-			const connectedSockets = await io.fetchSockets();
+			const connectedSockets = await socketServer.fetchSockets();
 			if (connectedSockets.length === 0) {
 				(async () => {
-					console.log('No sockets connected. Stopping API requests.');
 					await clearIntervalAsync(timer);
 					queriesOn = false;
 				})();
 			}
-		} catch (err) {
-			console.error(err);
-		}
+		} catch (err) {}
 	}, refetchInterval);
+};
+
+// Calculate distances and create arrays for violators and all drones
+const formatDroneLists = (data: IRawData[]) => {
+	const violators: ISavedDrone[] = [];
+	const allDrones: IRawData[] = data.map((drone: IRawData) => {
+		const x = Math.abs(drone.positionX - 250000);
+		const y = Math.abs(drone.positionY - 250000);
+		const distance = Math.sqrt(x * x + y * y);
+		const rad = 100000;
+		if (distance > rad) {
+			drone.violator = false;
+			return drone;
+		}
+		violators.push({
+			serialNumber: drone.serialNumber,
+			violationTime: new Date(),
+			distance: distance,
+			name: '-',
+			email: '-',
+			phoneNumber: '-',
+		});
+		drone.violator = true;
+		return drone;
+	});
+	return [violators, allDrones] as formatReturnType;
+};
+
+// Save new violators and update info for existing ones
+const saveOrUpdateViolator = async (violator: ISavedDrone) => {
+	try {
+		const record = await prisma.drone.findFirst({
+			where: {
+				serialNumber: violator.serialNumber,
+			},
+		});
+		if (!record) {
+			saveNewViolator(violator);
+			return;
+		}
+		updateViolationTime(violator);
+		// Save closest distance to the hive
+		if (record.distance > violator.distance)
+			updateViolationDistance(violator);
+	} catch (err) {}
+};
+
+// Get new pilot data and save to DB
+const saveNewViolator = async (violator: ISavedDrone) => {
+	const pilotInfo = await fetchInfo({
+		serialNumber: violator.serialNumber,
+	});
+	await prisma.drone.create({
+		data: {
+			...violator,
+			name: `${pilotInfo.firstName} ${pilotInfo.lastName}`,
+			email: pilotInfo.email,
+			phoneNumber: pilotInfo.phoneNumber,
+		},
+	});
+};
+
+const updateViolationTime = async(violator: ISavedDrone) => {
+	await prisma.drone.update({
+		where: {
+			serialNumber: violator.serialNumber,
+		},
+		data: {
+			violationTime: violator.violationTime,
+		},
+	});
+};
+const updateViolationDistance = async(violator: ISavedDrone) => {
+	await prisma.drone.update({
+		where: {
+			serialNumber: violator.serialNumber,
+		},
+		data: {
+			distance: violator.distance,
+		},
+	});
+};
+
+const deleteExpiredData = async () => {
+	await prisma.drone.deleteMany({
+		where: {
+			violationTime: {
+				lt: new Date(new Date().getTime() - 10 * 60 * 1000),
+			},
+		},
+	});
+};
+
+const getCurrentViolators = async () => {
+	return prisma.drone.findMany({
+		orderBy: [
+			{
+				violationTime: 'desc',
+			},
+		],
+	});
 };
