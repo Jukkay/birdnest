@@ -1,9 +1,15 @@
 import { XMLParser } from 'fast-xml-parser';
 
 // API queries
-export const fetchClientDroneList = async () => {
-	const response = await fetch('/api/drones');
-	return await response.json();
+
+export const fetchDroneList = async () => {
+	const response = await fetch(
+		'https://assignments.reaktor.com/birdnest/drones'
+	);
+	if (!response.ok) throw new Error('Failed to retrieve drone data');
+	const xml = await response.text();
+	const parser = new XMLParser();
+	return parser.parse(xml).report.capture.drone;
 };
 
 export const fetchInfo = async ({ serialNumber }: { serialNumber: string }) => {

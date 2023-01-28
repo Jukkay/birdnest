@@ -55,3 +55,5 @@ export interface IRawData {
 	altitude: number;
 	violator: boolean;
 }
+
+export type formatReturnType = [violators: ISavedDrone[], allDrones: IRawData[]]
