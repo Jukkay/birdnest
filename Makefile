@@ -1,3 +1,5 @@
+birdnest: clean build up-production-detached init-db logs
+
 create:
 	docker-compose up -d --force-recreate birdnest_app
 
@@ -8,7 +10,7 @@ up-production:
 	docker image rm -f birdnest_app
 	docker build
 	docker-compose -f docker-compose.yml -f production.yml up
-
+ 
 restart:
 	docker-compose up -d
 
@@ -33,3 +35,6 @@ logs:
 
 build:
 	docker-compose run --rm birdnest_app "npm run build"
+
+up-production-detached:
+	docker compose -f docker-compose.yml -f production.yml up -d
